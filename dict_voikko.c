@@ -28,6 +28,7 @@
 
 PG_MODULE_MAGIC;
 
+#define NMATCH 20
 
 typedef struct
 {
@@ -130,8 +131,7 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS) {
 	char	   *txt = lowerstr_with_len(in, PG_GETARG_INT32(2));
 	int * lex_n;
 	char * base, * p, * match;
-	size_t nmatch = 20;
-	regmatch_t matchptr[nmatch];
+	regmatch_t matchptr[NMATCH];
 	regmatch_t matchp;
 
 
@@ -151,14 +151,14 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS) {
 					base = removeEqualSign(base_);
 					voikko_free_mor_analysis_value_cstr(base_);
 					p = base;
-					while (!regexec(d->regex_stem, p, nmatch, matchptr, 0)) {
+					while (!regexec(d->regex_stem, p, NMATCH, matchptr, 0)) {
 						matchp = matchptr[1];
 						res = add_lexeme(res, lex_n, p + matchp.rm_so, matchp.rm_eo - matchp.rm_so);
 						p += matchptr[0].rm_eo;
 					}
 
 					p = base;
-					while (!regexec(d->regex_suff, p, nmatch, matchptr, 0)) {
+					while (!regexec(d->regex_suff, p, NMATCH, matchptr, 0)) {
 						regmatch_t match_b = matchptr[1];
 						regmatch_t match_s = matchptr[5];
 						int len_b = match_b.rm_eo - match_b.rm_so, len_s = match_s.rm_eo - match_s.rm_so;
