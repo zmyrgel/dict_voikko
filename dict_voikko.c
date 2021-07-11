@@ -30,12 +30,11 @@ PG_MODULE_MAGIC;
 
 #define NMATCH 20
 
-typedef struct
-{
-	struct VoikkoHandle * voikko;
-	regex_t * regex_stem;
-	regex_t * regex_suff;
-	StopList	stoplist;
+typedef struct {
+	struct VoikkoHandle *voikko;
+	regex_t *regex_stem;
+	regex_t *regex_suff;
+	StopList stoplist;
 } DictVoikko;
 
 
@@ -45,12 +44,13 @@ Datum		dvoikko_init(PG_FUNCTION_ARGS);
 PG_FUNCTION_INFO_V1(dvoikko_lexize);
 Datum		dvoikko_lexize(PG_FUNCTION_ARGS);
 
-Datum dvoikko_init(PG_FUNCTION_ARGS) {
-	List	   *dictoptions = (List *) PG_GETARG_POINTER(0);
-	DictVoikko *d = (DictVoikko *) palloc0(sizeof(DictVoikko));
+Datum dvoikko_init(PG_FUNCTION_ARGS)
+{
+	List		*dictoptions = (List *) PG_GETARG_POINTER(0);
+	DictVoikko	*d = (DictVoikko *) palloc0(sizeof(DictVoikko));
 	bool		stoploaded = false;
-	ListCell   *l;
-	const char * voikko_error;
+	ListCell	*l;
+	const char	*voikko_error;
 
 	foreach(l, dictoptions) {
 		DefElem    *defel = (DefElem *) lfirst(l);
@@ -87,7 +87,9 @@ Datum dvoikko_init(PG_FUNCTION_ARGS) {
 	PG_RETURN_POINTER(d);
 }
 
-static TSLexeme * add_lexeme(TSLexeme * res, int * lex_n, const char * in_lexeme, const int num) {
+static TSLexeme *
+add_lexeme(TSLexeme *res, int *lex_n, const char *in_lexeme, const int num)
+{
 	char * lexeme = lowerstr_with_len(in_lexeme, num);
 	int i;
 	int n = (*lex_n) + 1;
@@ -109,8 +111,10 @@ static TSLexeme * add_lexeme(TSLexeme * res, int * lex_n, const char * in_lexeme
 	return res;
 }
 
-static char * removeEqualSign(const char * in) {
-	char * out = palloc0(sizeof(char));
+static char *
+removeEqualSign(const char * in)
+{
+	char *out = palloc0(sizeof(char));
 	int i_in = 0, i_out = 0;
 	while (in[i_in] != '\0') {
 		if ('=' != in[i_in]) {
@@ -125,24 +129,23 @@ static char * removeEqualSign(const char * in) {
 }
 
 Datum dvoikko_lexize(PG_FUNCTION_ARGS) {
-	TSLexeme * res = NULL;
-	DictVoikko *d = (DictVoikko *) PG_GETARG_POINTER(0);
-	char	   *in = (char *) PG_GETARG_POINTER(1);
-	char	   *txt = lowerstr_with_len(in, PG_GETARG_INT32(2));
-	int * lex_n;
-	char * base, * p, * match;
-	regmatch_t matchptr[NMATCH];
-	regmatch_t matchp;
-
+	TSLexeme	*res = NULL;
+	DictVoikko	*d = (DictVoikko *) PG_GETARG_POINTER(0);
+	char		*in = (char *) PG_GETARG_POINTER(1);
+	char		*txt = lowerstr_with_len(in, PG_GETARG_INT32(2));
+	int		*lex_n;
+	char		*base, *p, *match;
+	regmatch_t	matchptr[NMATCH];
+	regmatch_t	matchp;
 
 	if (*txt == '\0' || searchstoplist(&(d->stoplist), txt)) {
 		res = palloc0(sizeof(TSLexeme) * 2);
 	} else /*if (VOIKKO_SPELL_OK == voikkoSpellCstr(d->voikko, txt))*/ {
-		struct voikko_mor_analysis ** analysis_arr = voikkoAnalyzeWordCstr(d->voikko, txt);
+		struct voikko_mor_analysis **analysis_arr = voikkoAnalyzeWordCstr(d->voikko, txt);
 		if (analysis_arr) {
-			struct voikko_mor_analysis * analysis = analysis_arr[0];
+			struct voikko_mor_analysis *analysis = analysis_arr[0];
 			if (analysis) {
-				char * base_ = voikko_mor_analysis_value_cstr(analysis, "WORDBASES");
+				char *base_ = voikko_mor_analysis_value_cstr(analysis, "WORDBASES");
 				if (base_) {
 					res = palloc0(sizeof(TSLexeme));
 					res[0].lexeme = NULL;
