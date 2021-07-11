@@ -77,11 +77,11 @@ Datum dvoikko_init(PG_FUNCTION_ARGS)
 	}
 
 	d->regex_stem = palloc0(sizeof(regex_t));
-	if (regcomp(d->regex_stem, "\\((([a-zA-Z]|ä|ö|Ä|Ö)+)\\)", REG_EXTENDED))
+	if (regcomp(d->regex_stem, "\\((([a-zA-Z]|å|ä|ö|Å|Ä|Ö)+)\\)", REG_EXTENDED))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("could not compile regex")));
 
 	d->regex_suff = palloc0(sizeof(regex_t));
-	if (regcomp(d->regex_suff, "\\+(([a-zA-Z]|ä|ö|Ä|Ö)+)\\(([a-zA-Z]|ä|ö|Ä|Ö)+\\)\\+([a-zA-Z]|ä|ö|Ä|Ö)+\\(\\+(([a-zA-Z]|ä|ö|Ä|Ö)+)\\)", REG_EXTENDED))
+	if (regcomp(d->regex_suff, "\\+(([a-zA-Z]|å|ä|ö|Å|Ä|Ö)+)\\(([a-zA-Z]|å|ä|ö|Å|Ä|Ö)+\\)\\+([a-zA-Z]|å|ä|ö|Å|Ä|Ö)+\\(\\+(([a-zA-Z]|å|ä|ö|Å|Ä|Ö)+)\\)", REG_EXTENDED))
 		ereport(ERROR, (errcode(ERRCODE_INTERNAL_ERROR), errmsg("could not compile regex")));
 
 	PG_RETURN_POINTER(d);
