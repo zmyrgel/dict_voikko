@@ -139,7 +139,7 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS) {
 
 	if (*txt == '\0' || searchstoplist(&(d->stoplist), txt)) {
 		res = palloc0(sizeof(TSLexeme) * 2);
-	} else /*if (VOIKKO_SPELL_OK == voikkoSpellCstr(d->voikko, txt))*/ {
+	} else {
 		struct voikko_mor_analysis **analysis_arr = voikkoAnalyzeWordCstr(d->voikko, txt);
 		if (analysis_arr) {
 			struct voikko_mor_analysis *analysis = analysis_arr[0];
@@ -184,7 +184,4 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS) {
 	pfree(matchptr);
 	pfree(txt);
 	PG_RETURN_POINTER(res);
-
-//    voikkoTerminate(d->voikko);
-
 }
