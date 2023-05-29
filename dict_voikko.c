@@ -134,7 +134,7 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS) {
 	int		*lex_n;
 	char		*base, *p, *match;
 	size_t		nmatch = 20;
-	regmatch_t	*matchptr = palloc0(nmatch * sizeof(matchptr));
+	regmatch_t	*matchptr = palloc0(nmatch * sizeof(regmatch_t));
 	regmatch_t	matchp;
 
 	if (*txt == '\0' || searchstoplist(&(d->stoplist), txt)) {
