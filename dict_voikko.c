@@ -15,16 +15,17 @@
 
 #include "postgres.h"
 
-#include "commands/defrem.h"
-#include "tsearch/ts_public.h"
-#include "tsearch/ts_locale.h"
-#include "tsearch/ts_utils.h"
-
-#include <libvoikko/voikko.h>
-
 #include <string.h>
 #include <sys/types.h>
 #include <regex.h>
+
+#include "catalog/pg_collation_d.h"
+#include "commands/defrem.h"
+#include "tsearch/ts_utils.h"
+#include "utils/formatting.h"
+
+#include <libvoikko/voikko.h>
+
 
 PG_MODULE_MAGIC;
 
@@ -34,7 +35,6 @@ typedef struct {
 	regex_t *regex_suff;
 	StopList stoplist;
 } DictVoikko;
-
 
 PG_FUNCTION_INFO_V1(dvoikko_init);
 Datum		dvoikko_init(PG_FUNCTION_ARGS);
@@ -58,7 +58,7 @@ Datum dvoikko_init(PG_FUNCTION_ARGS)
 				ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					errmsg("multiple StopWords parameters")));
-			readstoplist(defGetString(defel), &d->stoplist, lowerstr);
+			readstoplist(defGetString(defel), &d->stoplist, str_tolower);
 			stoploaded = true;
 		} else {
 			ereport(ERROR,
@@ -88,7 +88,7 @@ Datum dvoikko_init(PG_FUNCTION_ARGS)
 static TSLexeme *
 add_lexeme(TSLexeme *res, int *lex_n, const char *in_lexeme, const int num)
 {
-	char * lexeme = lowerstr_with_len(in_lexeme, num);
+	char * lexeme = str_tolower(in_lexeme, num, DEFAULT_COLLATION_OID);
 	int i;
 	int n = (*lex_n) + 1;
 	char * lexeme_ = palloc0(sizeof(char) * (num + 1));
@@ -130,8 +130,8 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS) {
 	TSLexeme	*res = NULL;
 	DictVoikko	*d = (DictVoikko *) PG_GETARG_POINTER(0);
 	char		*in = (char *) PG_GETARG_POINTER(1);
-	char		*txt = lowerstr_with_len(in, PG_GETARG_INT32(2));
 	int		*lex_n;
+	char		*txt = str_tolower(in, PG_GETARG_INT32(2), DEFAULT_COLLATION_OID);
 	char		*base, *p, *match;
 	size_t		nmatch = 20;
 	regmatch_t	*matchptr = palloc0(nmatch * sizeof(regmatch_t));
