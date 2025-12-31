@@ -116,7 +116,7 @@ removeEqualSign(const char * in)
 	char *out = palloc0(len + 1);
 	size_t i_out = 0;
 
-	for (size_t i_in = 0; i < len; i_in++) {
+	for (size_t i_in = 0; i_in < len; i_in++) {
 		if (in[i_in] != '=') {
 			out[i_out++] = in[i_in];
 		}
