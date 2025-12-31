@@ -131,7 +131,7 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS)
 	TSLexeme	*res = NULL;
 	DictVoikko	*d = (DictVoikko *) PG_GETARG_POINTER(0);
 	char		*in = (char *) PG_GETARG_POINTER(1);
-	int		*lex_n;
+	int		lex_n = 0;
 	char		*txt = str_tolower(in, PG_GETARG_INT32(2), DEFAULT_COLLATION_OID);
 	char		*base, *p, *match;
 	size_t		nmatch = 20;
@@ -149,14 +149,12 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS)
 				if (base_) {
 					res = palloc0(sizeof(TSLexeme));
 					res[0].lexeme = NULL;
-					lex_n = palloc0(sizeof(int));
-					*lex_n = 0;
 					base = removeEqualSign(base_);
 					voikko_free_mor_analysis_value_cstr(base_);
 					p = base;
 					while (!regexec(d->regex_stem, p, nmatch, matchptr, 0)) {
 						matchp = matchptr[1];
-						res = add_lexeme(res, lex_n, p + matchp.rm_so, matchp.rm_eo - matchp.rm_so);
+						res = add_lexeme(res, &lex_n, p + matchp.rm_so, matchp.rm_eo - matchp.rm_so);
 						p += matchptr[0].rm_eo;
 					}
 
@@ -168,13 +166,12 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS)
 						match = palloc0(sizeof(char) * (len_b + len_s));
 						memcpy(match, p + match_b.rm_so, len_b);
 						memcpy(match + len_b, p + match_s.rm_so, len_s);
-						res = add_lexeme(res, lex_n, match, len_b + len_s);
+						res = add_lexeme(res, &lex_n, match, len_b + len_s);
 						pfree(match);
 						p += matchptr[0].rm_eo;
 					}
 
 					pfree(base);
-					pfree(lex_n);
 				}
 			}
 
