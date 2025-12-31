@@ -126,7 +126,8 @@ removeEqualSign(const char * in)
 	return out;
 }
 
-Datum dvoikko_lexize(PG_FUNCTION_ARGS) {
+Datum dvoikko_lexize(PG_FUNCTION_ARGS)
+{
 	TSLexeme	*res = NULL;
 	DictVoikko	*d = (DictVoikko *) PG_GETARG_POINTER(0);
 	char		*in = (char *) PG_GETARG_POINTER(1);
