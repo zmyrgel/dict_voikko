@@ -112,17 +112,19 @@ add_lexeme(TSLexeme *res, int *lex_n, const char *in_lexeme, const int num)
 static char *
 removeEqualSign(const char * in)
 {
-	char *out = palloc0(sizeof(char));
-	int i_in = 0, i_out = 0;
-	while (in[i_in] != '\0') {
-		if ('=' != in[i_in]) {
-			out[i_out] = in[i_in];
-			++i_out;
-			out = repalloc(out, sizeof(char) * (i_out + 1));
+	size_t len = strlen(in);
+	char *out = palloc0(len + 1);
+	size_t i_out = 0;
+
+	for (size_t i_in = 0; i < len; i_in++) {
+		if (in[i_in] != '=') {
+			out[i_out++] = in[i_in];
 		}
-		++i_in;
 	}
+
 	out[i_out] = '\0';
+	out = repalloc(out, i_out + 1);
+
 	return out;
 }
 
