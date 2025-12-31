@@ -86,24 +86,27 @@ Datum dvoikko_init(PG_FUNCTION_ARGS)
 }
 
 static TSLexeme *
-add_lexeme(TSLexeme *res, int *lex_n, const char *in_lexeme, const int num)
+add_lexeme(TSLexeme *res, size_t *lex_n, const char *in_lexeme, const size_t in_lexeme_len)
 {
-	char * lexeme = str_tolower(in_lexeme, num, DEFAULT_COLLATION_OID);
+	char * lexeme = str_tolower(in_lexeme, in_lexeme_len, DEFAULT_COLLATION_OID);
 	int i;
-	int n = (*lex_n) + 1;
-	char * lexeme_ = palloc0(sizeof(char) * (num + 1));
+	size_t n = (*lex_n) + 1;
+	char * lexeme_ = palloc0(in_lexeme_len + 1);
 
 	for (i = 0; i < *lex_n; ++i) {
-		if ('\0' == res[i].lexeme[num + 1] && !memcmp(res[i].lexeme, lexeme, num)) {
+		if (res[i].lexeme && res[i].lexeme[in_lexeme_len] == '\0' && memcmp(res[i].lexeme, lexeme, in_lexeme_len) == 0) {
+			pfree(lexeme);
+			pfree(lexeme_);
 			return res;
 		}
 	}
+
 	res = repalloc(res, sizeof(TSLexeme) * (n + 1));
 	res[n].lexeme = NULL;
 	res[n].nvariant = 0;
 	res[n].flags = 0;
-	res[n - 1].lexeme = memcpy(lexeme_, lexeme, num);
-	lexeme_[num] = '\0';
+	res[n - 1].lexeme = memcpy(lexeme_, lexeme, in_lexeme_len);
+	lexeme_[in_lexeme_len] = '\0';
 	*lex_n = n;
 	pfree(lexeme);
 	return res;
@@ -133,7 +136,7 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS)
 	TSLexeme	*res = NULL;
 	DictVoikko	*d = (DictVoikko *) PG_GETARG_POINTER(0);
 	char		*in = (char *) PG_GETARG_POINTER(1);
-	int		lex_n = 0;
+	size_t		lex_n = 0;
 	char		*txt = str_tolower(in, PG_GETARG_INT32(2), DEFAULT_COLLATION_OID);
 	char		*base, *p, *match;
 	size_t		nmatch = 20;
