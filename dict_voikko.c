@@ -160,10 +160,18 @@ Datum dvoikko_lexize(PG_FUNCTION_ARGS)
 
 					p = base;
 					while (!regexec(d->regex_suff, p, nmatch, matchptr, 0)) {
-						regmatch_t match_b = matchptr[1];
-						regmatch_t match_s = matchptr[5];
-						int len_b = match_b.rm_eo - match_b.rm_so, len_s = match_s.rm_eo - match_s.rm_so;
-						match = palloc0(sizeof(char) * (len_b + len_s));
+						regmatch_t match_b, match_s;
+						int len_b, len_s;
+						if (d->regex_suff->re_nsub < 5) {
+							ereport(ERROR, (errmsg("regex_suff does not provide expected capture groups")));
+						}
+
+						match_b = matchptr[1];
+						match_s = matchptr[5];
+						len_b = match_b.rm_eo - match_b.rm_so;
+						len_s = match_s.rm_eo - match_s.rm_so;
+						match = palloc0(len_b + len_s + 1);
+						match[len_b + len_s] = '\0';
 						memcpy(match, p + match_b.rm_so, len_b);
 						memcpy(match + len_b, p + match_s.rm_so, len_s);
 						res = add_lexeme(res, &lex_n, match, len_b + len_s);
